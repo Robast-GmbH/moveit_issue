@@ -106,7 +106,7 @@ namespace door_opening_mechanism_mtc
     target_pose.pose.orientation.w = quaternion.w();
 
     // This works
-    auto state_move_to_start_pose = std::make_unique<mtc::stages::MoveTo>("Starting position", sampling_planner);
+    auto state_move_to_start_pose = std::make_unique<mtc::stages::MoveTo>("Starting position", interpolation_planner);
     state_move_to_start_pose->setGroup(group_name_arm);
     state_move_to_start_pose->setGoal("starting_position_arm");
     state_move_to_start_pose->properties().configureInitFrom(mtc::Stage::PARENT, {"group"});
