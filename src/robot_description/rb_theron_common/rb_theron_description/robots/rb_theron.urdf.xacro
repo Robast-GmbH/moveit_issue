@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<robot name="rb_theron"
+	xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+	<!-- ***************** -->
+	<!-- Imported elements -->
+	<!-- ***************** -->
+
+	<!-- Import differential base elements -->
+	<xacro:include filename="$(find rb_theron_description)/robots/rb_theron_base.urdf.xacro" />
+	<xacro:include filename="$(find rb_theron_description)/urdf/wheels/rubber_wheel_150.urdf.xacro" />
+	<xacro:include filename="$(find rb_theron_description)/urdf/wheels/castor.urdf.xacro" />
+	<xacro:include filename="$(find robotnik_sensors)/urdf/all_sensors.urdf.xacro" />
+
+	<!-- Import Gazebo Stuff -->
+	<xacro:include filename="$(find rb_theron_description)/urdf/common.gazebo.xacro" />
+
+
+	<!-- ***************** -->
+	<!-- Global parameters -->
+	<!-- ***************** -->
+
+	<xacro:property name="PI" value="3.1415926535897931"/>
+	<!-- Flag to determine if the base_footprint should be published or not -->
+	<xacro:property name="publish_bf" value="true"/>
+
+	<!-- This name should match the "-name" argument we need to declare when spawing the robot into ign gazebo -->
+	<xacro:property name="robot_name" value="rb_theron"/>
+
+	<!-- Wheel parameters -->
+	<!--xacro:property name="wheel_offset_x" value="0" />
+  <xacro:property name="wheel_offset_y" value="0.2516" />
+  <xacro:property name="wheel_offset_z" value="0.0" /-->
+
+	<!-- Flag to select the high or low quality model -->
+	<xacro:property name="hq" value="false" />
+
+	<xacro:arg name="prefix" default=""/>
+	<!-- <xacro:arg name="gpu" default="true"/> -->
+
+	<!-- *************** -->
+	<!-- Robots Elements -->
+	<!-- *************** -->
+
+	<!-- base with wheels -->
+	<xacro:rb_theron_base prefix="$(arg prefix)" hq="${hq}" publish_bf="${publish_bf}" />
+
+	<!-- Gazebo ros control pluggins -->
+	<!-- <xacro:ros_control/> -->
+	<xacro:gazebo_colors prefix="$(arg prefix)"/>
+
+
+	<!-- ROBAST Door Opening Mechanism -->
+	<xacro:include filename="$(find rb_theron_description)/urdf/door_opening_mechanism/door_opening_mechanism.urdf.xacro" />
+	<xacro:door_opening_mechanism prefix="$(arg prefix)" parent="$(arg prefix)base_link" hq="${hq}">
+		<origin xyz="-0.3 0 0.225" rpy="0 0 0"/>
+	</xacro:door_opening_mechanism>
+
+</robot>
