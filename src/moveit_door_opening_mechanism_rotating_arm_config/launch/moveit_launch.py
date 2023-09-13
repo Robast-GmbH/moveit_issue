@@ -61,7 +61,7 @@ def generate_launch_description():
                 LaunchConfiguration("disable_capabilities"), value_type=str
                 ),
                 # Publish the planning scene of the physical robot so that rviz plugin can know actual robot
-                "publish_planning_scene": should_publish,
+                "publish_planning_scene": False,
                 "publish_geometry_updates": should_publish,
                 "publish_state_updates": should_publish,
                 "publish_transforms_updates": should_publish,

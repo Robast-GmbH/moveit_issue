@@ -56,4 +56,6 @@
 		<origin xyz="-0.3 0 0.225" rpy="0 0 0"/>
 	</xacro:door_opening_mechanism>
 
+	<!-- Gazebo ros control pluggins -->
+	<xacro:ros_control prefix="$(arg prefix)" publish_bf="${publish_bf}"/>
 </robot>

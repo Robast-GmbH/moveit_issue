@@ -63,7 +63,6 @@ namespace door_opening_mechanism_mtc
     task.stages()->setName("approach door handle task");
     task.loadRobotModel(shared_from_this());
 
-    const auto& group_name = "door_opening_mechanism";   // mobile_base_arm or door_opening_mechanism
     const auto& group_name_arm = "door_opening_mechanism";
     const auto& end_effector_name = "door_opening_end_effector";
     const auto& end_effector_parent_link = "door_opening_mechanism_link_freely_rotating_hook";
@@ -72,7 +71,7 @@ namespace door_opening_mechanism_mtc
     const auto& hand_frame = "hook_base_link";
 
     // Set task properties
-    task.setProperty("group", group_name);
+    task.setProperty("group", group_name_arm);
     task.setProperty("eef", end_effector_name);
     task.setProperty("ik_frame", end_effector_parent_link);
 
@@ -89,53 +88,37 @@ namespace door_opening_mechanism_mtc
     cartesian_planner->setMaxAccelerationScalingFactor(1.0);
     cartesian_planner->setStepSize(.01);
 
-    auto stage_open_hand = std::make_unique<mtc::stages::MoveTo>("Starting position", interpolation_planner);
-    stage_open_hand->setGroup(group_name_arm);
-    stage_open_hand->setGoal("starting_position_arm");
-    stage_open_hand->properties().configureInitFrom(mtc::Stage::PARENT, {"group"});
-    // stage_open_hand->setIKFrame(end_effector_parent_link);
-    // stage_open_hand->properties().configureInitFrom(mtc::Stage::PARENT);
-    task.add(std::move(stage_open_hand));
+    geometry_msgs::msg::PoseStamped target_pose = geometry_msgs::msg::PoseStamped();
+    target_pose.pose.position.x = -0.680502;
+    target_pose.pose.position.y = 0.211497;
+    target_pose.pose.position.z = 0.822400;
+    target_pose.header.frame_id = "base_footprint";
 
-    // auto stage_move_to_pick = std::make_unique<mtc::stages::Connect>(
-    //     "move to pick", mtc::stages::Connect::GroupPlannerVector{{group_name, sampling_planner}});
-    // // clang-format on
-    // stage_move_to_pick->setTimeout(5.0);
-    // stage_move_to_pick->properties().configureInitFrom(mtc::Stage::PARENT);
-    // task.add(std::move(stage_move_to_pick));
+    double roll = 1.57079632679;
+    double pitch = 1.57079632679;
+    double yaw = 0.0;
+    // Create a Quaternion
+    tf2::Quaternion quaternion;
+    quaternion.setRPY(roll, pitch, yaw);
+    target_pose.pose.orientation.x = quaternion.x();
+    target_pose.pose.orientation.y = quaternion.y();
+    target_pose.pose.orientation.z = quaternion.z();
+    target_pose.pose.orientation.w = quaternion.w();
 
-    // auto stage_move_to_target_pose = std::make_unique<mtc::stages::MoveTo>("Move to target pose", sampling_planner);
-    // stage_move_to_target_pose->setGroup(group_name);
-    // stage_move_to_target_pose->setIKFrame(target_pose);
-    // stage_move_to_target_pose->setGoal(target_pose);
-    // task.add(std::move(stage_move_to_target_pose));
+    // This works
+    auto state_move_to_start_pose = std::make_unique<mtc::stages::MoveTo>("Starting position", sampling_planner);
+    state_move_to_start_pose->setGroup(group_name_arm);
+    state_move_to_start_pose->setGoal("starting_position_arm");
+    state_move_to_start_pose->properties().configureInitFrom(mtc::Stage::PARENT, {"group"});
+    task.add(std::move(state_move_to_start_pose));
 
-    // auto grasp = std::make_unique<mtc::SerialContainer>("pick object");
-    // task.properties().exposeTo(grasp->properties(), {"eef", "group", "ik_frame"});
-    // // clang-format off
-    // grasp->properties().configureInitFrom(mtc::Stage::PARENT,
-    //                                       { "eef", "group", "ik_frame" });
-
-    /****************************************************
-     *                  Generate Grasp Pose              *
-     ****************************************************/
-    {
-      // Sample grasp pose
-      // auto stage = std::make_unique<mtc::stages::GeneratePose>("Generate handle grasp pose");
-      // stage->properties().configureInitFrom(mtc::Stage::PARENT);
-      // stage->properties().set("marker_ns", "grasp_pose");
-      // stage->setPose(target_pose);
-      // stage->setMonitoredStage(current_state_ptr);   // Hook into current state
-
-      // auto wrapper = std::make_unique<mtc::stages::ComputeIK>("grasp pose IK", std::move(stage));
-      // wrapper->setMaxIKSolutions(8);
-      // wrapper->setMinSolutionDistance(0.1);
-      // wrapper->setIKFrame(target_pose);
-      // wrapper->properties().configureInitFrom(mtc::Stage::PARENT, {"eef", "group"});
-      // wrapper->properties().configureInitFrom(mtc::Stage::INTERFACE, {"target_pose"});
-      // grasp->insert(std::move(wrapper));
-      // task.add(std::move(stage));
-    }
+    //TODO: This does not work - why? In my opinion the target pose is reachable (compare with rviz)
+    auto state_move_to_target_pose = std::make_unique<mtc::stages::MoveTo>("Move to target pose", sampling_planner);
+    state_move_to_target_pose->setGroup(group_name_arm);
+    state_move_to_target_pose->setGoal(target_pose);
+    state_move_to_target_pose->properties().configureInitFrom(mtc::Stage::PARENT, {"group"});
+    state_move_to_target_pose->setIKFrame(end_effector_parent_link);
+    task.add(std::move(state_move_to_target_pose));
 
     return task;
   }

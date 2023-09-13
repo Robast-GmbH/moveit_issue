@@ -9,6 +9,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Matrix3x3.h>
 
 #include "depthai_ros_msgs/msg/spatial_detection_array.hpp"
 
@@ -23,7 +25,6 @@ namespace door_opening_mechanism_mtc
 
    private:
     const rclcpp::Logger _LOGGER = rclcpp::get_logger("dom_mtc");
-
 
     std::string _planning_group_name;
     const std::string _DEFAULT_PLANNING_GROUP_NAME = "door_opening_mechanism";
