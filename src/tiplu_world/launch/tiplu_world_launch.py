@@ -64,14 +64,6 @@ def generate_launch_description():
         description="whether to use sim time or not",
     )
 
-    static_tf = Node(
-            package="tf2_ros",
-            executable="static_transform_publisher",
-            name="static_transform_publisher",
-            output="log",
-            arguments=["--frame-id", "world", "--child-frame-id", "base_link"],
-    )
-
     start_robot_state_publisher_cmd = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
