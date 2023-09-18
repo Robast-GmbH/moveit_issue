@@ -21,9 +21,9 @@ def generate_launch_description():
         os.path.join(
             get_package_share_directory("rb_theron_description"),
             "robots",
-            os.environ["robot"] + ".urdf.xacro",
+            os.environ.get("robot", "rb_theron") + ".urdf.xacro",
         ),
-        mappings={"prefix": os.environ["prefix"]},
+        mappings={"prefix": os.environ.get("prefix", "")},
     ).toxml()
 
     use_sim_time = LaunchConfiguration("use_sim_time")
@@ -55,7 +55,7 @@ def generate_launch_description():
     declare_headless_cmd = DeclareLaunchArgument(
         "headless",
         default_value=" ",
-        description="Weather to run in headless mode (-s) or with gui ''",
+        description="Whether to run in headless mode (-s) or with gui ''",
     )
 
     declare_use_sim_time_cmd = DeclareLaunchArgument(

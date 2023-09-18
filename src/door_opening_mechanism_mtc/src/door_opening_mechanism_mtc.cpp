@@ -106,19 +106,34 @@ namespace door_opening_mechanism_mtc
     target_pose.pose.orientation.w = quaternion.w();
 
     // This works
-    auto state_move_to_start_pose = std::make_unique<mtc::stages::MoveTo>("Starting position", interpolation_planner);
-    state_move_to_start_pose->setGroup(group_name_arm);
-    state_move_to_start_pose->setGoal("starting_position_arm");
-    state_move_to_start_pose->properties().configureInitFrom(mtc::Stage::PARENT, {"group"});
-    task.add(std::move(state_move_to_start_pose));
+    // auto state_move_to_start_pose = std::make_unique<mtc::stages::MoveTo>("Starting position", sampling_planner);
+    // state_move_to_start_pose->setGroup(group_name_arm);
+    // state_move_to_start_pose->setGoal("starting_position_arm");
+    // state_move_to_start_pose->properties().configureInitFrom(mtc::Stage::PARENT, {"group"});
+    // task.add(std::move(state_move_to_start_pose));
 
-    //TODO: This does not work - why? In my opinion the target pose is reachable (compare with rviz)
-    auto state_move_to_target_pose = std::make_unique<mtc::stages::MoveTo>("Move to target pose", sampling_planner);
-    state_move_to_target_pose->setGroup(group_name_arm);
-    state_move_to_target_pose->setGoal(target_pose);
-    state_move_to_target_pose->properties().configureInitFrom(mtc::Stage::PARENT, {"group"});
-    state_move_to_target_pose->setIKFrame(end_effector_parent_link);
-    task.add(std::move(state_move_to_target_pose));
+    // Connect the initial stage with the generated IK solution using the sampling planner.
+    auto stage = std::make_unique<moveit::task_constructor::stages::Connect>(
+        "Connect",
+        moveit::task_constructor::stages::Connect::GroupPlannerVector{ { group_name_arm, sampling_planner } });
+    stage->properties().configureInitFrom(moveit::task_constructor::Stage::PARENT);
+    task.add(std::move(stage));
+  
+    // Generate a pose (this gets put in the IK wrapper below)
+    auto generate_pose_stage = std::make_unique<moveit::task_constructor::stages::GeneratePose>("generate pose");
+    generate_pose_stage->setPose(target_pose);
+    generate_pose_stage->setMonitoredStage(task.stages()->findChild("current"));
+
+    // Compute IK
+    auto ik_wrapper = std::make_unique<moveit::task_constructor::stages::ComputeIK>(
+      "generate pose IK", std::move(generate_pose_stage));
+    ik_wrapper->setMaxIKSolutions(10);
+    ik_wrapper->setTimeout(1.0);
+    ik_wrapper->setIKFrame(end_effector_parent_link);
+    ik_wrapper->properties().configureInitFrom(moveit::task_constructor::Stage::PARENT, { "eef", "group" });
+    ik_wrapper->properties().configureInitFrom(moveit::task_constructor::Stage::INTERFACE, { "target_pose" });
+    task.add(std::move(ik_wrapper));
+
 
     return task;
   }
