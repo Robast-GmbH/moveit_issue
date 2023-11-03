@@ -201,6 +201,7 @@ namespace door_opening_mechanism_mtc
     workspace_params.max_corner.y = 10.0;
     workspace_params.max_corner.z = 10.0;
     sampling_planner->setProperty("workspace_parameters", workspace_params);
+    //TODO@Jacob: How do I know which properties can be set here? Can i set the planner_id as well? 
 
     auto interpolation_planner = std::make_shared<mtc::solvers::JointInterpolationPlanner>();
 
